@@ -1,8 +1,9 @@
+// qunit + specit and we only write AAA tests nothing lower than AAA+ thanks.
 describe('wired tests', function () {
 
 	var selector = 'input[data-wired]';
 	var shortcut = 'a';
-	var shortcutKeyCode = 65;
+	var document = window.document;
 	var elements;
 
 	before(function () {
@@ -15,18 +16,40 @@ describe('wired tests', function () {
 		element = null;
 	});
 
-	it('should advance to next wired element', function () {
-		// arrange
+	it('should select first wired element when pressed for first time without focus', function () {
+		// assert – see what i did here
 		var first = elements[0];
-		var result;
+		var focused = focusedElement();
+		assert(focused).is(empty);
+		assert(focused).not(first);
 
-		// act
-		emulateKeyEvent(shortcutKeyCode, first);
+		// act – trigger shortcut key on document
+		emulateKeyEvent(shortcut, document);
 
 		// assert
+		stop();
 		setTimeout(function () {
-			// TODO: get currently focused element
-		}, 10);
+			focused = focusedElement();
+			assert(focused).is(first);
+			start();
+		}, 15);
+
+		// it's still AAA
+	});
+
+	it('should advance to next wired element when activated', function () {
+		// arrange
+		var first = elements[1];
+
+		// act
+		emulateKeyEvent(shortcut, first);
+
+		// assert
+		stop();
+		setTimeout(function () {
+			assert(focusedElement()).to(eql, first);
+			start();
+		}, 15);
 	});
 
 });
@@ -38,10 +61,11 @@ describe('wired tests', function () {
 function createKeyEvent (type, key) {
 	var event = document.createEvent('Event');
 	event.initEvent(type, true, true);
-	event.keyCode = key;
+	event.keyCode = typeof key === 'string' ? key.charCodeAt(0) : key;
 	return event;
 }
 
+// emulate a simple key press event (without the keypress event). woah.
 function emulateKeyEvent (key, element) {
 	var keydown = createKeyEvent('keydown', key);
 	var keyup = createKeyEvent('keyup', key);
@@ -50,7 +74,18 @@ function emulateKeyEvent (key, element) {
 	trigger(keyup, element);
 }
 
+// get currently focused element
+function focusedElement () {
+	throw new 'argh';
+}
+
+// focus on given element
+function focusElement (element) {
+	throw new 'argh';
+}
+
+// trigger a given event on the element. if element is empty, trigger it on
+// the document object.
 function trigger (event, element) {
 	(element || document).dispatchEvent(event);
 }
-
